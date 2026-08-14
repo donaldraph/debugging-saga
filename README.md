@@ -45,17 +45,14 @@ which is also what happens to most debugging knowledge anyway.
 
 ## Status
 
-Backend complete and live: saga generation (Gemini, four tones) and
-narration (Polly, one voice per tone) both work end to end.
+Live: https://d1haw8tkljqm0i.cloudfront.net
 
-- Site: https://d1haw8tkljqm0i.cloudfront.net
-- API: https://x8wn77svi0.execute-api.us-east-1.amazonaws.com/dev/
-
-The real frontend lands next; until then the site is an honest placeholder
-and the API speaks for itself:
+Pick a story, pick a voice, press Dramatize. The API works without the
+frontend too:
 
 ```
-curl -X POST <api>/generate -H 'Content-Type: application/json' \
+curl -X POST https://x8wn77svi0.execute-api.us-east-1.amazonaws.com/dev/generate \
+  -H 'Content-Type: application/json' \
   -d '{"showcase_id": "five-token-throttle", "tone": "noir"}'
 ```
 

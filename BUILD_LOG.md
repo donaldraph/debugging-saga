@@ -153,3 +153,31 @@ the Inverted Scroll", narrated by Amy - a real 802KB MP3, 2m14s, downloaded
 via the presigned URL and verified as MPEG layer III audio. A free-text
 tab-in-the-yaml story as noir returned "A Single Byte of Treason" in
 Matthew's voice, proving per-tone casting on the paste-your-own path too.
+
+## Phase 5: frontend (2026-08-14)
+
+The playbill. Own identity (parchment by day, stage-dark by night,
+curtain-red and gold, Georgia serif), deliberately distinct from convene's
+green editorial and standup-brief's sunrise paper. Vanilla HTML/CSS/JS, no
+build step, no CDNs; the API base arrives via the config.js injection the
+hosting stack has done since phase 1.
+
+Structure follows the joke: Act I choose a story (showcase cards fetched
+from GET /showcase, or the bring-your-own-bug textarea with a live 6000-char
+counter), Act II choose a voice (tone pills), Dramatize. The result panel
+opens with "The curtain rises on", plays the narration in a native audio
+element, credits the cast honestly (tone, model, voice), and folds the
+original build-log excerpt behind "The true story, as it was actually
+logged" - truth beside drama is the product. If audio failed, the panel
+says the narrator lost their voice and shows the text anyway. Waiting copy
+rotates through four lines including "Consulting the muses. The muses are
+rate-limited."
+
+No failures this phase. Verified live after deploy: all four assets serve
+200 from CloudFront with the right content types; headless Chrome rendered
+the deployed page and the DOM shows all four showcase cards fetched from
+the real API, all four tone pills, and the loading note cleared; screenshots
+in both light and dark themes look right; Dramatize stays disabled until a
+story and tone are both chosen. The generate path itself was already proven
+at the API level in phases 3-4 and the page calls the same route the same
+way.
