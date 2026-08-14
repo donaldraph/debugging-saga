@@ -4,6 +4,7 @@ import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as apigw from 'aws-cdk-lib/aws-apigateway';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
+import * as iam from 'aws-cdk-lib/aws-iam';
 import * as path from 'path';
 
 // Secret name fixed here so every phase wires the same one. Created out of
@@ -73,6 +74,14 @@ export class ApiStack extends cdk.Stack {
       512,
     );
     geminiSecret.grantRead(generateFn);
+
+    // Narration: Polly synthesis (voices are not resources, so *) plus put +
+    // presigned-get on the audio bucket.
+    generateFn.addToRolePolicy(new iam.PolicyStatement({
+      actions: ['polly:SynthesizeSpeech'],
+      resources: ['*'],
+    }));
+    audioBucket.grantReadWrite(generateFn);
 
     const showcaseFn = makeFn('ShowcaseFn', 'get_showcase.handler');
 
