@@ -45,12 +45,19 @@ which is also what happens to most debugging knowledge anyway.
 
 ## Status
 
-Scaffold deployed and live:
+Backend complete and live: saga generation (Gemini, four tones) and
+narration (Polly, one voice per tone) both work end to end.
 
 - Site: https://d1haw8tkljqm0i.cloudfront.net
-- API: https://x8wn77svi0.execute-api.us-east-1.amazonaws.com/dev/health
+- API: https://x8wn77svi0.execute-api.us-east-1.amazonaws.com/dev/
 
-Saga generation, narration, and the real frontend land next.
+The real frontend lands next; until then the site is an honest placeholder
+and the API speaks for itself:
+
+```
+curl -X POST <api>/generate -H 'Content-Type: application/json' \
+  -d '{"showcase_id": "five-token-throttle", "tone": "noir"}'
+```
 
 ## Infra
 

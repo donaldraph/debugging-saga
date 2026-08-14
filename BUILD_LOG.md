@@ -120,3 +120,36 @@ mode turned a pasted wrong-file CSS story into a nature documentary in 8s
 ("a file named styles dot css trapped inside an abandoned folder called old
 underscore backup ... No browser will ever graze upon its rules"); bad tone
 and empty text both return honest 400s naming the valid options.
+
+## Phase 4: Polly narration (2026-08-14)
+
+Decisions:
+
+- **One neural voice per tone**, because the voice is half of how a tone
+  lands aloud: Brian narrates the epics (the bard), Matthew the noir (the
+  private eye), Arthur the nature documentaries (the documentarian), Amy the
+  tragedies (the chorus). Polly bills per character, so four voices cost the
+  same as one.
+- **The narrator reads the title first**, like any self-respecting bard.
+- **Audio stays in the private bucket, served by presigned URL** (6h), on
+  top of the bucket's own 7-day lifecycle expiry. Streaming bytes through
+  API Gateway (base64 inflation, 10MB cap) and opening the bucket were both
+  worse options.
+- **Chunked synthesis as a safety net**: neural SynthesizeSpeech bills at
+  most 3000 chars per call, so text splits at sentence ends under 2500 and
+  the MP3 chunks concatenate (same codec, same bitrate). Verified by unit
+  test: a 200-sentence text splits into 5 chunks all under cap, and a
+  pathological 6000-char single sentence hard-splits rather than erroring.
+- **Text-only degradation**: if Polly fails after Gemini succeeded, the
+  response keeps the saga and carries an explicit audio_error. The text is
+  the primary artifact; losing it over a narration hiccup would be
+  all-or-nothing for no reason.
+
+No failures this phase: tsc + deploy clean, and both live tests worked
+first try.
+
+Live proof (2026-08-14): schema-betrayal as tragedy returned "The Curse of
+the Inverted Scroll", narrated by Amy - a real 802KB MP3, 2m14s, downloaded
+via the presigned URL and verified as MPEG layer III audio. A free-text
+tab-in-the-yaml story as noir returned "A Single Byte of Treason" in
+Matthew's voice, proving per-tone casting on the paste-your-own path too.
