@@ -45,7 +45,12 @@ which is also what happens to most debugging knowledge anyway.
 
 ## Status
 
-Scaffolding. Live URL and real sagas coming before the deadline.
+Scaffold deployed and live:
+
+- Site: https://d1haw8tkljqm0i.cloudfront.net
+- API: https://x8wn77svi0.execute-api.us-east-1.amazonaws.com/dev/health
+
+Saga generation, narration, and the real frontend land next.
 
 ## Infra
 

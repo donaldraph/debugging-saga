@@ -46,3 +46,22 @@ Scaffold decisions, so later phases inherit them:
   will re-verify what this key can reach.
 - **API scaffold ships one real route (GET /health)** and nothing else. Routes
   land with the phase that implements them.
+
+Proof: `npm install` + clean `tsc` + `cdk synth` produced all three templates
+(dsg-dev-data, dsg-dev-api, dsg-dev-hosting) on the first run. No failures this
+phase, so no symptom/root-cause entries yet.
+
+### Early deploy (2026-08-14, same day)
+
+Deployed the scaffold to AWS immediately, so a reachable URL exists from day
+one. One pass, no failures, 557s total:
+
+- Site: https://d1haw8tkljqm0i.cloudfront.net (honest placeholder, config.js
+  injected with the API base)
+- API: https://x8wn77svi0.execute-api.us-east-1.amazonaws.com/dev/ where
+  GET /health returns ok with audio_bucket reachable against
+  dsg-audio-dev, proving API Gateway, Lambda, IAM, and the bucket are wired
+  end to end
+- Public repo pushed: https://github.com/donaldraph/debugging-saga
+- Same known cdk annotation as convene (crossStackReferencesDefaultStrong),
+  a note not a failure.
