@@ -65,3 +65,58 @@ one. One pass, no failures, 557s total:
 - Public repo pushed: https://github.com/donaldraph/debugging-saga
 - Same known cdk annotation as convene (crossStackReferencesDefaultStrong),
   a note not a failure.
+
+## Phase 3: Gemini saga generation (2026-08-14)
+
+The load-bearing AI. Decisions:
+
+- **Synchronous, deliberately.** Convene earned its async worker because slot
+  ranking had huge prompts and could exceed 29s. Saga generation measured
+  live at 5-13s on gemini-flash-latest and ~3s on gemini-3.5-flash-lite, so
+  the chain (18s + 8s budgets) fits under API Gateway's cap with room. If
+  free-tier queueing ever breaks that, the convene async pattern is the
+  known fix; logged here so future me does not rediscover it the hard way.
+- **flash-latest primary, lite fallback.** Reversed from convene's async-era
+  ordering: this is creative output, so the sharper writer gets first crack,
+  and the reliable one is the net. No deterministic fallback exists for
+  creative writing, so total failure is an honest 503 ("the narrator is
+  unavailable"), never fake AI output.
+- **POST /generate is public** because the whole point is anyone pasting
+  their bug. Quota protection is a narrow stage throttle (5 rps / 10 burst)
+  plus a 6000-char input cap instead of an API key.
+- **Temperature 0.9.** The facts are pinned by the prompt rules, so the
+  heat goes entirely into the telling.
+
+Prompt tuning, against real stories with the real key before any deploy:
+all four tones tested live (epic on five-token-throttle, noir on
+schema-betrayal, nature on calendar-account-mixup, tragedy on
+29-second-guillotine). All four kept every number and error string. One
+tweak needed: the tragedy ended on a flat technical restatement, so the
+tone instructions now hand the closing line to the chorus; the retest
+closed with "do not shave your precious seconds to fit an arbitrary blade,
+but sever the tether between the asking and the answering", which is the
+correct amount of drama for a timeout bug.
+
+One real failure this phase, and it is saga-worthy in its own right:
+
+**Symptom:** after deploying the new routes, POST /generate and GET /showcase
+both returned 403 "Missing Authentication Token" while GET /health kept
+working. The resources and methods existed in API Gateway.
+**Root cause:** the stage was still serving a deployment snapshot that
+predated the new methods. The CloudFormation update created its deployment
+before the new Method resources landed, so the stage pointed at a snapshot
+of an API where /generate did not exist. API Gateway reports an unknown
+route as a 403 auth error, which is a spectacular piece of misdirection.
+**Fix:** one manual `aws apigateway create-deployment` against the stage to
+re-snapshot; both routes answered immediately.
+**Reasoning:** the misleading 403 is the trap worth logging. "Missing
+Authentication Token" on a route you just added means the stage has not
+been redeployed; it has nothing to do with authentication.
+
+Live proof (2026-08-14): POST /generate with showcase_id
+calendar-account-mixup returned a real epic from gemini-flash-latest in 13s
+("Four times did the architect attempt the ritual of creation"); free-text
+mode turned a pasted wrong-file CSS story into a nature documentary in 8s
+("a file named styles dot css trapped inside an abandoned folder called old
+underscore backup ... No browser will ever graze upon its rules"); bad tone
+and empty text both return honest 400s naming the valid options.
