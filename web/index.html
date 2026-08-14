@@ -4,30 +4,70 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Debugging Saga</title>
-  <style>
-    body {
-      margin: 0;
-      min-height: 100vh;
-      display: grid;
-      place-items: center;
-      font-family: Georgia, 'Times New Roman', serif;
-      background: #f7f3ec;
-      color: #2b2620;
-    }
-    main { text-align: center; padding: 2rem; max-width: 34rem; }
-    h1 { font-size: 1.6rem; margin-bottom: 0.5rem; }
-    p { color: #6b6257; line-height: 1.5; }
-    @media (prefers-color-scheme: dark) {
-      body { background: #1c1916; color: #e8e2d8; }
-      p { color: #a89e90; }
-    }
-  </style>
+  <link rel="stylesheet" href="styles.css">
+  <script src="config.js"></script>
 </head>
 <body>
-  <main>
+  <header class="masthead">
+    <div class="mark" aria-hidden="true">&#9884;</div>
     <h1>Debugging Saga</h1>
-    <p>Nothing has been dramatized yet. The scaffold is deployed and the
-    narrator is clearing their throat. Sagas arrive with the next phase.</p>
+    <p class="tagline">Your bug deserves a better story than "closed, works now."</p>
+  </header>
+
+  <main>
+    <section class="panel" aria-labelledby="pick-heading">
+      <h2 id="pick-heading">Act I: choose a story</h2>
+      <div class="mode-toggle" role="tablist" aria-label="Story source">
+        <button id="mode-showcase" class="mode active" role="tab" aria-selected="true">The showcase</button>
+        <button id="mode-own" class="mode" role="tab" aria-selected="false">Bring your own bug</button>
+      </div>
+
+      <div id="showcase-pane">
+        <p class="hint">Four true stories from my own build logs. The drama is
+        added; the facts are not.</p>
+        <div id="showcase-cards" class="cards">
+          <p class="loading-note">Fetching the repertoire&hellip;</p>
+        </div>
+      </div>
+
+      <div id="own-pane" hidden>
+        <label for="own-text" class="hint">Paste a debugging story: what broke,
+        why, how it got fixed. Honesty makes it funnier.</label>
+        <textarea id="own-text" maxlength="6000" rows="8"
+          placeholder="It was DNS. It is always DNS. But for two days I refused to believe it was DNS..."></textarea>
+        <div class="counter"><span id="char-count">0</span> / 6000</div>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="tone-heading">
+      <h2 id="tone-heading">Act II: choose a voice</h2>
+      <div id="tone-pills" class="pills" role="radiogroup" aria-label="Tone"></div>
+      <button id="generate" class="generate" disabled>Dramatize</button>
+      <p id="status" class="status" role="status"></p>
+    </section>
+
+    <section id="result" class="panel result" hidden aria-labelledby="saga-title">
+      <p class="curtain">The curtain rises on</p>
+      <h2 id="saga-title"></h2>
+      <p id="credits" class="credits"></p>
+      <audio id="player" controls preload="auto"></audio>
+      <p id="audio-note" class="audio-note" hidden></p>
+      <div id="saga-text" class="saga-text"></div>
+      <details id="truth">
+        <summary>The true story, as it was actually logged</summary>
+        <pre id="truth-text"></pre>
+      </details>
+      <button id="again" class="again">Tell another</button>
+    </section>
   </main>
+
+  <footer>
+    <p>Every showcase story really happened. Gemini writes, Amazon Polly
+    narrates, and the audio dissolves after a few hours, like all debugging
+    knowledge.</p>
+    <p><a href="https://github.com/donaldraph/debugging-saga">Source on GitHub</a></p>
+  </footer>
+
+  <script src="app.js"></script>
 </body>
 </html>

@@ -1,0 +1,221 @@
+/* Debugging Saga - playbill identity. Parchment by day, stage-dark by night.
+   Self-contained: system fonts only, no CDNs. */
+
+:root {
+  --paper: #f6f0e4;
+  --panel: #fdfaf3;
+  --ink: #2a2118;
+  --muted: #7a6c5a;
+  --accent: #8c2d19;      /* stage-curtain red */
+  --accent-soft: #b8552f;
+  --gold: #a4791f;
+  --line: #ddd2bf;
+  --shadow: 0 2px 10px rgba(42, 33, 24, 0.08);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #191512;
+    --panel: #211c17;
+    --ink: #ece4d6;
+    --muted: #a3947f;
+    --accent: #d0693f;
+    --accent-soft: #b8552f;
+    --gold: #c9a04a;
+    --line: #3a322a;
+    --shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  background: var(--paper);
+  color: var(--ink);
+  line-height: 1.55;
+}
+
+.masthead {
+  text-align: center;
+  padding: 2.5rem 1rem 1.5rem;
+  border-bottom: 3px double var(--line);
+}
+.mark { font-size: 1.6rem; color: var(--gold); }
+.masthead h1 {
+  margin: 0.2rem 0 0.3rem;
+  font-size: clamp(1.9rem, 5vw, 2.8rem);
+  letter-spacing: 0.04em;
+}
+.tagline { margin: 0; color: var(--muted); font-style: italic; }
+
+main { max-width: 46rem; margin: 0 auto; padding: 1rem 1rem 3rem; }
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  padding: 1.4rem 1.5rem;
+  margin-top: 1.4rem;
+}
+.panel h2 {
+  margin: 0 0 0.9rem;
+  font-size: 1.05rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.hint { color: var(--muted); margin: 0.2rem 0 0.9rem; }
+
+/* Mode toggle */
+.mode-toggle { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+.mode {
+  font: inherit;
+  padding: 0.45rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+.mode.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+/* Showcase cards */
+.cards { display: grid; gap: 0.7rem; }
+.card {
+  font: inherit;
+  text-align: left;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.card:hover { border-color: var(--accent-soft); }
+.card.selected { border: 2px solid var(--accent); padding: calc(0.85rem - 1px) calc(1rem - 1px); }
+.card .card-title { font-weight: bold; }
+.card .card-meta { color: var(--gold); font-size: 0.8rem; letter-spacing: 0.06em; }
+.card .card-teaser { color: var(--muted); font-size: 0.92rem; margin-top: 0.15rem; }
+
+/* Own text */
+textarea {
+  width: 100%;
+  font: inherit;
+  font-size: 0.95rem;
+  padding: 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper);
+  color: var(--ink);
+  resize: vertical;
+}
+textarea:focus { outline: 2px solid var(--accent-soft); }
+.counter { text-align: right; color: var(--muted); font-size: 0.8rem; margin-top: 0.3rem; }
+
+/* Tone pills */
+.pills { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.1rem; }
+.pill {
+  font: inherit;
+  padding: 0.5rem 1.05rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.pill:hover { border-color: var(--gold); }
+.pill.selected { background: var(--gold); border-color: var(--gold); color: #fff; }
+
+.generate {
+  font: inherit;
+  font-size: 1.05rem;
+  width: 100%;
+  padding: 0.8rem;
+  border: none;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+  letter-spacing: 0.05em;
+}
+.generate:hover:not(:disabled) { background: var(--accent-soft); }
+.generate:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.status { min-height: 1.4rem; color: var(--muted); font-style: italic; margin: 0.7rem 0 0; }
+.status.error { color: var(--accent); font-style: normal; }
+
+/* Result */
+.result { text-align: center; }
+.curtain {
+  color: var(--muted);
+  font-style: italic;
+  margin: 0 0 0.2rem;
+}
+.result h2 {
+  text-transform: none;
+  letter-spacing: 0.01em;
+  color: var(--ink);
+  font-size: 1.6rem;
+  margin-bottom: 0.3rem;
+}
+.credits { color: var(--gold); font-size: 0.85rem; letter-spacing: 0.05em; margin: 0 0 1rem; }
+audio { width: 100%; margin-bottom: 0.4rem; }
+.audio-note { color: var(--accent); font-size: 0.9rem; }
+.saga-text {
+  text-align: left;
+  margin-top: 1rem;
+  font-size: 1.02rem;
+}
+.saga-text p { margin: 0 0 0.9rem; }
+.saga-text p:first-of-type::first-letter {
+  font-size: 2.6rem;
+  float: left;
+  line-height: 0.9;
+  padding-right: 0.35rem;
+  color: var(--accent);
+}
+
+details { text-align: left; margin-top: 1rem; border-top: 1px dashed var(--line); padding-top: 0.8rem; }
+summary { cursor: pointer; color: var(--muted); }
+details pre {
+  white-space: pre-wrap;
+  font-family: ui-monospace, 'Cascadia Code', Menlo, Consolas, monospace;
+  font-size: 0.82rem;
+  color: var(--muted);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.9rem;
+}
+
+.again {
+  font: inherit;
+  margin-top: 1.2rem;
+  padding: 0.55rem 1.4rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+.again:hover { border-color: var(--accent); color: var(--accent); }
+
+.loading-note { color: var(--muted); font-style: italic; }
+
+footer {
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.85rem;
+  padding: 1.5rem 1rem 2.5rem;
+  border-top: 3px double var(--line);
+}
+footer a { color: var(--gold); }
