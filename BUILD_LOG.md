@@ -181,3 +181,32 @@ in both light and dark themes look right; Dramatize stays disabled until a
 story and tone are both chosen. The generate path itself was already proven
 at the API level in phases 3-4 and the page calls the same route the same
 way.
+
+## Phase 6: live click-through of both modes (2026-08-14)
+
+The closing test: a real browser driving the deployed site through both
+modes end to end, scripted with puppeteer-core against the installed Chrome
+(scripts/clickthrough.js, committed; `npm i puppeteer-core` then run it).
+The browser-extension route was not connected this session, so the scripted
+real browser was the fallback; same Chrome, same site, same clicks.
+
+Everything passed, ten assertions, zero page JS errors:
+
+- Showcase mode: picked the five-token throttle card + Epic fantasy,
+  Dramatize enabled only after both picks, generated "The Oath of the Five
+  Tokens and the Iron Gate" with honest credits, and the audio REALLY
+  played: 94.5s duration, playback clock advanced 2.7s after play(). The
+  truth toggle showed the real build-log excerpt (5.76 BILLION and all).
+- Bring-your-own-bug mode: typed a fresh on-call-rotation story (281 chars,
+  live counter), picked Greek tragedy, got "The Tragedy of the Unread
+  Oracle" narrated by Amy, closing line "weep for the proud mortals who
+  trust a messenger that speaks only to ghosts".
+- Bonus proof nobody planned: the showcase saga was written by
+  gemini-3.5-flash-lite, meaning flash-latest failed once mid-test and the
+  fallback chain caught it silently through the UI, exactly what it is for.
+  The tragedy run went back to flash-latest. Both models are doing real
+  work in production.
+
+Full-page screenshots of both completed flows saved during the run. All six
+build-order steps are done: the app is live, public, and demoable end to
+end at https://d1haw8tkljqm0i.cloudfront.net.
