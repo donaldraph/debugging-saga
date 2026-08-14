@@ -10,12 +10,16 @@ latency (flash-latest 5-13s, lite 3s) fits under API Gateway's 29s cap with
 room; if free-tier queueing ever breaks that, the convene async pattern is
 the known fix.
 
-Narration (Polly) lands in the next phase; until then audio is null.
+The saga text is the primary artifact: if Polly fails after Gemini
+succeeded, the response still carries the saga, with an explicit
+audio_error instead of a silent null. Degrade visibly, never all-or-nothing
+when the valuable half succeeded.
 """
 
 import json
 
 import model
+import narrate
 from showcase_data import SHOWCASE_BY_ID
 
 MAX_CHARS = 6000
@@ -63,8 +67,16 @@ def handler(event, context):
     try:
         out = model.generate_saga(story, tone)
     except model.SagaError as exc:
-        return _resp(503, {"error": "the narrator is unavailable",
+        return _resp(503, {"error": "the saga writer is unavailable",
                            "detail": str(exc)})
+
+    # The narrator reads the title first, like any self-respecting bard.
+    audio = None
+    audio_error = None
+    try:
+        audio = narrate.narrate(f"{out['title']}. {out['saga']}", tone)
+    except Exception as exc:  # noqa: BLE001 - text-only beats losing the saga
+        audio_error = f"narration failed ({type(exc).__name__}); text-only saga"
 
     return _resp(200, {
         "title": out["title"],
@@ -73,5 +85,6 @@ def handler(event, context):
         "tone_name": model.TONES[tone]["name"],
         "model": out["model"],
         "source": source,
-        "audio": None,
+        "audio": audio,
+        "audio_error": audio_error,
     })
