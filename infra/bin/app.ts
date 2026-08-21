@@ -17,11 +17,14 @@ const env: cdk.Environment = {
 
 const prefix = `dsg-${stage}`;
 
-// Storage layer - the audio bucket. No database; a saga is stateless.
+// Storage layer - the audio bucket (interactive sagas stay stateless) plus
+// the auto-remix table for the unattended, always-on premiere.
 const data = new DataStack(app, `${prefix}-data`, { env, stage });
 
 // Compute + API - saga generation (Gemini) and narration (Polly).
-const api = new ApiStack(app, `${prefix}-api`, { env, stage, audioBucket: data.audioBucket });
+const api = new ApiStack(app, `${prefix}-api`, {
+  env, stage, audioBucket: data.audioBucket, autoSagas: data.autoSagas,
+});
 
 // Static hosting - S3 + CloudFront for the frontend, fed the API base URL.
 new HostingStack(app, `${prefix}-hosting`, { env, stage, apiUrl: api.api.url });

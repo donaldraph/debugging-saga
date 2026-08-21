@@ -87,8 +87,16 @@ def narrate(text: str, tone: str) -> dict:
         "get_object", Params={"Bucket": bucket, "Key": key}, ExpiresIn=_URL_TTL_S)
     return {
         "url": url,
+        "key": key,
         "voice": voice,
         "engine": ENGINE,
         "bytes": len(audio),
         "expires_in_s": _URL_TTL_S,
     }
+
+
+def presign(key: str, ttl_s: int = _URL_TTL_S) -> str:
+    """Fresh presigned GET for audio already sitting in the bucket."""
+    bucket = os.environ["AUDIO_BUCKET"]
+    return _s3.generate_presigned_url(
+        "get_object", Params={"Bucket": bucket, "Key": key}, ExpiresIn=ttl_s)

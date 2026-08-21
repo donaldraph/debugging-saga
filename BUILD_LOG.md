@@ -210,3 +210,37 @@ Everything passed, ten assertions, zero page JS errors:
 Full-page screenshots of both completed flows saved during the run. All six
 build-order steps are done: the app is live, public, and demoable end to
 end at https://d1haw8tkljqm0i.cloudfront.net.
+
+## Step 7: the unattended premiere (2026-08-21) — AWS Builder Center "Set
+## Your Creative App Free" weekend
+
+This app was deliberately stateless: a saga is generated, played, and
+forgotten. For the always-on-agent follow-up challenge it needed the
+opposite of that on purpose, without breaking the original promise, so the
+interactive picker is untouched and a new EventBridge-driven path sits
+beside it.
+
+Added a DynamoDB table (`dsg-autosaga-dev`, `pk`/`sk`, 7-day TTL matching
+the audio bucket's own lifecycle) and `auto_remix.py`, invoked every 3
+hours by a new `events.Rule`. It runs the exact same seam `/generate`
+already uses (`model.generate_saga` then `narrate.narrate`), but instead of
+a human picking a story and tone, it rotates deterministically through all
+16 combinations (4 showcase stories x 4 tones, alphabetical by tone so the
+sequence is reconstructible from the last stored combo alone with no
+separate cursor) and stores the result under `pk=LATEST_AUTO`. A new public,
+read-only `GET /latest-auto` serves it to the frontend, regenerating a
+fresh presigned S3 URL from the stored key on every read rather than
+serving one that may already have expired.
+
+Verified by direct invocation of the deployed `auto_remix.py` (the same
+code path EventBridge calls, not a mock): four calls in a row produced
+calendar-account-mixup in epic, then nature, then noir, then tragedy - no
+repeats, exactly the fixed rotation order - and the last one, "The Tragedy
+of the Misplaced Calendars," Gemini-written and Polly-narrated end to end,
+came back with a real presigned audio URL through `GET /latest-auto`
+seconds later. The EventBridge rule itself is confirmed `ENABLED` on a
+3-hour rate. The frontend gained one new panel, "Now showing, unattended,"
+populated from `/latest-auto` on page load and labelled with the real
+generation timestamp, above the untouched Act I/Act II picker - so a
+visitor sees something the machine made on its own before they touch
+anything, and can still make their own afterward.

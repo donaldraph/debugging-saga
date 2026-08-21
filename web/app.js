@@ -127,6 +127,53 @@
     el('result').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
+  // ---- unattended premiere ----
+
+  function renderAutoPremiere(rec) {
+    if (!rec) return;
+    el('auto-title').textContent = rec.title;
+    var credits = rec.tone_name + ' · written by ' + rec.model;
+    if (rec.audio) { credits += ' · narrated by ' + rec.audio.voice; }
+    el('auto-credits').textContent = credits;
+
+    var player = el('auto-player');
+    var note = el('auto-audio-note');
+    if (rec.audio) {
+      player.src = rec.audio.url;
+      player.hidden = false;
+      note.hidden = true;
+    } else {
+      player.removeAttribute('src');
+      player.hidden = true;
+      note.textContent = 'The narrator lost their voice (' +
+        (rec.audio_error || 'unknown reason') + '). The text stands alone.';
+      note.hidden = false;
+    }
+
+    var textWrap = el('auto-saga-text');
+    textWrap.innerHTML = '';
+    rec.saga.split(/\n\n+/).forEach(function (para) {
+      var p = document.createElement('p');
+      p.textContent = para;
+      textWrap.appendChild(p);
+    });
+
+    el('auto-note').textContent = 'Generated on its own at ' +
+      rec.generated_at.replace('T', ' ').slice(0, 16) + ' UTC, no human involved. ' +
+      'Rotates through the showcase automatically every few hours.';
+    el('now-showing').hidden = false;
+  }
+
+  function fetchAutoPremiere() {
+    fetch(API + '/latest-auto')
+      .then(function (r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      })
+      .then(function (data) { renderAutoPremiere(data.latest); })
+      .catch(function () { /* the premiere is a bonus, not the main act */ });
+  }
+
   // ---- actions ----
 
   function generate() {
@@ -191,6 +238,8 @@
     setStatus('No API configured. config.js is missing its base URL.', true);
     return;
   }
+
+  fetchAutoPremiere();
 
   fetch(API + '/showcase')
     .then(function (r) {

@@ -15,6 +15,16 @@
   </header>
 
   <main>
+    <section id="now-showing" class="panel result" hidden aria-labelledby="auto-title">
+      <p class="curtain">Now showing, unattended</p>
+      <h2 id="auto-title"></h2>
+      <p id="auto-credits" class="credits"></p>
+      <audio id="auto-player" controls preload="none"></audio>
+      <p id="auto-audio-note" class="audio-note" hidden></p>
+      <div id="auto-saga-text" class="saga-text"></div>
+      <p class="hint" id="auto-note"></p>
+    </section>
+
     <section class="panel" aria-labelledby="pick-heading">
       <h2 id="pick-heading">Act I: choose a story</h2>
       <div class="mode-toggle" role="tablist" aria-label="Story source">

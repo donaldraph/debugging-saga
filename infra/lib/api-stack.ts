@@ -3,8 +3,11 @@ import { Construct } from 'constructs';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as apigw from 'aws-cdk-lib/aws-apigateway';
 import * as s3 from 'aws-cdk-lib/aws-s3';
+import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import * as iam from 'aws-cdk-lib/aws-iam';
+import * as events from 'aws-cdk-lib/aws-events';
+import * as targets from 'aws-cdk-lib/aws-events-targets';
 import * as path from 'path';
 
 // Secret name fixed here so every phase wires the same one. Created out of
@@ -16,6 +19,7 @@ export const GEMINI_SECRET_NAME = 'debugging-saga/gemini';
 interface ApiStackProps extends cdk.StackProps {
   stage: string;
   audioBucket: s3.Bucket;
+  autoSagas: dynamodb.Table;
 }
 
 /**
@@ -29,7 +33,7 @@ export class ApiStack extends cdk.Stack {
 
   constructor(scope: Construct, id: string, props: ApiStackProps) {
     super(scope, id, props);
-    const { audioBucket } = props;
+    const { audioBucket, autoSagas } = props;
 
     const lambdasPath = path.join(__dirname, '..', 'lambdas');
     const commonEnv = {
@@ -85,6 +89,45 @@ export class ApiStack extends cdk.Stack {
 
     const showcaseFn = makeFn('ShowcaseFn', 'get_showcase.handler');
 
+    // The unattended premiere - EventBridge calls this on its own, no API
+    // Gateway involved, so it can take the full generate+narrate chain's
+    // time without racing a 29s wall. Same Gemini + Polly seam as /generate.
+    const autoRemixFn = makeFn(
+      'AutoRemixFn',
+      'auto_remix.handler',
+      {
+        GEMINI_SECRET_NAME,
+        MODEL_ID: this.node.tryGetContext('model') || 'gemini-flash-latest',
+        MODEL_FALLBACKS: this.node.tryGetContext('modelFallbacks') || 'gemini-3.5-flash-lite',
+        AUTOSAGA_TABLE: autoSagas.tableName,
+      },
+      60,
+      512,
+    );
+    geminiSecret.grantRead(autoRemixFn);
+    autoRemixFn.addToRolePolicy(new iam.PolicyStatement({
+      actions: ['polly:SynthesizeSpeech'],
+      resources: ['*'],
+    }));
+    audioBucket.grantReadWrite(autoRemixFn);
+    autoSagas.grantReadWriteData(autoRemixFn);
+
+    // 8 times a day: frequent enough that a visitor during the judging
+    // window sees real unattended output, light enough not to lean on
+    // Gemini/Polly free-tier quota.
+    new events.Rule(this, 'AutoRemixSchedule', {
+      ruleName: `dsg-auto-remix-${props.stage}`,
+      schedule: events.Schedule.rate(cdk.Duration.hours(3)),
+      targets: [new targets.LambdaFunction(autoRemixFn)],
+    });
+
+    // Read-only: the frontend's "now showing" panel. Never spends model
+    // quota, no matter how hard anyone refreshes.
+    const latestAutoFn = makeFn(
+      'LatestAutoFn', 'get_latest_auto.handler', { AUTOSAGA_TABLE: autoSagas.tableName });
+    autoSagas.grantReadData(latestAutoFn);
+    audioBucket.grantRead(latestAutoFn);
+
     this.api = new apigw.RestApi(this, 'Api', {
       restApiName: `dsg-${props.stage}`,
       deployOptions: {
@@ -104,6 +147,7 @@ export class ApiStack extends cdk.Stack {
     this.api.root.addResource('health').addMethod('GET', new apigw.LambdaIntegration(healthFn));
     this.api.root.addResource('generate').addMethod('POST', new apigw.LambdaIntegration(generateFn));
     this.api.root.addResource('showcase').addMethod('GET', new apigw.LambdaIntegration(showcaseFn));
+    this.api.root.addResource('latest-auto').addMethod('GET', new apigw.LambdaIntegration(latestAutoFn));
 
     new cdk.CfnOutput(this, 'ApiUrl', { value: this.api.url });
   }
